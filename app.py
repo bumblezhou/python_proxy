@@ -57,7 +57,7 @@ def sub_path(sub_path):
     if request.method == "POST":
         return jsonify({"result": True, "data": resp.text})
     else:
-        mime_type = get_mime_type(target_url)
+        mime_type = guess_mime_type(target_url)
         if (mime_type and mime_type.startswith("image")) or request.headers.environ["HTTP_ACCEPT"].startswith("image"):
             return send_file(
                 io.BytesIO(resp.content),
@@ -68,7 +68,7 @@ def sub_path(sub_path):
             return resp.content
 
 
-def get_mime_type(src):
+def guess_mime_type(src):
     file_ext = os.path.splitext(src)[1]
     if "&" in file_ext:
         file_ext = re.sub(r'&(\w+=\w*)+', "", file_ext)
