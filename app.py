@@ -15,7 +15,7 @@ import settings
 app = Flask(__name__)
 
 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-context.load_cert_chain('/etc/letsencrypt/live/jackzhou.co/cert.pem', '/etc/letsencrypt/live/jackzhou.co/privkey.pem')
+context.load_cert_chain('/path_to_your_cert_file/cert.pem', '/path_to_your_key_file/privkey.pem')
 
 @app.route('/')
 def home():
