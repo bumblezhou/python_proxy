@@ -3,6 +3,7 @@ import os
 import re
 import io
 import mimetypes
+import ssl
 from requests import Request, Session
 from flask import Flask, jsonify, render_template, request
 from flask.helpers import send_file
@@ -13,6 +14,8 @@ import settings
 # https://flask.palletsprojects.com/en/1.1.x/quickstart/#static-files
 app = Flask(__name__)
 
+context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+context.load_cert_chain('/etc/letsencrypt/live/jackzhou.co/cert.pem', '/etc/letsencrypt/live/jackzhou.co/privkey.pem')
 
 @app.route('/')
 def home():
@@ -37,8 +40,12 @@ def sub_path(sub_path):
         else:
             raise Exception('Invalid request body')
 
-    current_target_url = request.referrer.replace("http://localhost:5000/proxy/", "")
-    target_url = current_target_url + request.headers.environ["REQUEST_URI"]
+    if request.referrer and "https://localhost:8080" not in request.referrer:
+        current_target_url = request.referrer.replace("https://localhost:8080/proxy/", "")
+        target_url = current_target_url + request.headers.environ["REQUEST_URI"]
+    if request.cookies['current_target_url']:
+        current_target_url = request.cookies['current_target_url']
+        target_url = current_target_url + request.headers.environ["REQUEST_URI"]
 
     session = Session()
 
@@ -108,4 +115,4 @@ def proxy(target_url):
 
 # run the application
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080, threaded=True)
+    app.run(host='0.0.0.0', port=8080, ssl_context=context, threaded=True)
